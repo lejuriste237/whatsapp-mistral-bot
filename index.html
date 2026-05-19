@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Images - Pollinations AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-cyan: #00f5ff;
+            --primary-magenta: #ff00ff;
+            --primary-purple: #7b2cbf;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(15, 15, 25, 0.8);
+            --border-glow: rgba(0, 245, 255, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgPulse 10s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Grid overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 0 40px rgba(0, 245, 255, 0.1),
+                inset 0 0 60px rgba(123, 44, 191, 0.05);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-cyan), var(--primary-magenta), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+            position: relative;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1.5rem;
+            background: rgba(10, 10, 15, 0.6);
+            border: 2px solid rgba(0, 245, 255, 0.2);
+            border-radius: 15px;
+            resize: vertical;
+            min-height: 120px;
+            font-size: 1.1rem;
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-cyan);
+            box-shadow: 
+                0 0 30px rgba(0, 245, 255, 0.2),
+                inset 0 0 20px rgba(0, 245, 255, 0.05);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-magenta));
+            color: var(--text-primary);
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .btn-generate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-generate:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 15px 40px rgba(255, 0, 255, 0.4),
+                0 0 60px rgba(0, 245, 255, 0.2);
+        }
+
+        .btn-generate:disabled {
+            background: linear-gradient(135deg, #4a4a5a, #6a6a7a);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .image-container {
+            margin-top: 2.5rem;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed rgba(0, 245, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(10, 10, 15, 0.4);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .image-container.has-image {
+            border-style: solid;
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 40px rgba(0, 245, 255, 0.2);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            border-radius: 10px;
+            animation: imageAppear 0.5s ease;
+        }
+
+        @keyframes imageAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 245, 255, 0.2);
+            border-top-color: var(--primary-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        .loading-spinner::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary-magenta);
+            border-radius: 50%;
+            animation: spin 2s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--primary-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .placeholder-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-cyan);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 2rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+            }
+            
+            .btn-generate {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <h1>AI Image Generator</h1>
+        <p class="subtitle">Powered by Pollinations AI</p>
+        
+        <div class="input-group">
+            <textarea id="promptInput" placeholder="Décrivez l'image que vous souhaitez générer... Ex: Un paysage cyberpunk avec des néons bleus et roses, ville futuriste sous la pluie"></textarea>
+        </div>
+        
+        <button class="btn-generate" id="generateBtn" onclick="generateImage()">
+            <span>Générer</span>
+        </button>
+        
+        <div class="image-container" id="imageContainer">
+            <p class="placeholder-text" id="placeholderText">Votre image apparaîtra ici</p>
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Génération en cours...</p>
+            </div>
+            <img id="resultImage" alt="Image générée par IA" />
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                
+                // Random colors
+                const colors = ['#00f5ff', '#ff00ff', '#7b2cbf'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        createParticles();
+
+        function generateImage() {
+            const prompt = document.getElementById('promptInput').value;
+            const btn = document.getElementById('generateBtn');
+            const img = document.getElementById('resultImage');
+            const loading = document.getElementById('loading');
+            const placeholder = document.getElementById('placeholderText');
+            const container = document.getElementById('imageContainer');
+
+            if (!prompt.trim()) {
+                // Shake animation for empty input
+                container.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    container.style.animation = '';
+                }, 500);
+                return;
+            }
+
+            // Add shake animation style
+            if (!document.getElementById('shake-style')) {
+                const style = document.createElement('style');
+                style.id = 'shake-style';
+                style.textContent = `
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        25% { transform: translateX(-10px); }
+                        75% { transform: translateX(10px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = '<span>Génération...</span>';
+            placeholder.style.display = 'none';
+            loading.style.display = 'flex';
+            img.style.display = 'none';
+            container.classList.remove('has-image');
+
+            // Encode the prompt for URL
+            const encodedPrompt = encodeURIComponent(prompt);
+            
+            // Add random seed to ensure different images for same prompt
+            const seed = Math.floor(Math.random() * 10000);
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}`;
+
+            // Load the image
+            img.onload = function() {
+                loading.style.display = 'none';
+                img.style.display = 'block';
+                container.classList.add('has-image');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Générer</span>';
+            };
+
+            img.onerror = function() {
+                loading.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.textContent = '❌ Erreur lors de la génération';
+                placeholder.style.color = '#ff4757';
+                btn.disabled = false;
+                btn.innerHTML = '<span>Réessayer</span>';
+            };
+
+            img.src = imageUrl;
+        }
+
+        // Add Enter key support (Ctrl+Enter to generate)
+        document.getElementById('promptInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                generateImage();
+            }
+        });
+    </script>
+</body>
+</html>
